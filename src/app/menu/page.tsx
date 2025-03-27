@@ -28,15 +28,15 @@ function MenuComponent() {
   }, []);
 
   return (
-    <div className=" text-white min-h-screen">
+    <div className="text-white min-h-screen">
       <div className="p-4">
         <User2 />
-        <p className="text-3xl font-bold mb-4">Menu</p>
+        <p className="text-3xl font-bold">Menu</p>
         <div className="flex items-center gap-4 mb-6">
           <Funnel />
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex overflow-x-auto pb-2">
             <button
-              className={`px-4 py-2 text-white relative transition-all duration-300 
+              className={`py-2 text-white relative transition-all duration-300 
                 ${
                   !activeCategory
                     ? "after:bg-[#D68037]"

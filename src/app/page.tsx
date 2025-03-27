@@ -3,10 +3,8 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="h-screen bg-black flex flex-col justify-end relative">
-      <div
-        className={`absolute font-mancondo text-6xl text-white w-full h-full flex items-center justify-center mb-48`}
-      >
+    <div className="h-screen bg-black flex flex-col justify-end">
+      <div className="absolute text-6xl text-white w-full h-full flex items-center justify-center mb-48 font-mancondo">
         GobbleGo
       </div>
       <Image

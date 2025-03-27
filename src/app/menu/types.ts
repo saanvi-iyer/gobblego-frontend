@@ -6,5 +6,5 @@ export interface MenuResponse {
   category: string;
   est_prep_time: number;
   description: string;
-  image?: string;
+  images: string;
 }
