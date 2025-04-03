@@ -29,7 +29,7 @@ function MenuComponent() {
   }, []);
 
   return (
-    <div className="text-white min-h-screen">
+    <div className="text-white min-h-screen bg-[#171717]">
       <div className="p-4">
         <div className="text-3xl font-bold flex flex-row items-center justify-between">
           <p>Menu</p>
@@ -41,7 +41,7 @@ function MenuComponent() {
           </div>
         </div>
         <div className="flex items-center gap-4 mb-6">
-          <div className="flex overflow-x-auto pb-2">
+          <div className="flex overflow-x-auto pb-2 whitespace-nowrap">
             <button
               className={`py-2 text-white relative transition-all duration-300 
                 ${
