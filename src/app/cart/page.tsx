@@ -5,6 +5,7 @@ import { CartItem, CartResponse } from "./types";
 
 import { Loader2 } from "lucide-react";
 import CartItemComponent from "./cart-item";
+import { UserDetails } from "../table/[id]/types";
 
 const Cart: React.FC = () => {
   const [cart, setCart] = useState<CartResponse | null>(null);
@@ -15,13 +16,15 @@ const Cart: React.FC = () => {
   }, []);
 
   const fetchCart = async () => {
+    const user = JSON.parse(
+      localStorage.getItem("user") ?? "{}"
+    ) as UserDetails;
+
     try {
       const res = await axios.get<CartResponse[]>(
         `${process.env.NEXT_PUBLIC_BASEURL}/cart/`
       );
-      if (res.data.length > 0) {
-        setCart(res.data[0]);
-      }
+      setCart(res.data.find((cart) => cart.cart_id == user.cart_id) || null);
     } catch (err) {
       console.error("Error fetching cart:", err);
     } finally {
@@ -54,7 +57,7 @@ const Cart: React.FC = () => {
     );
   }
 
-  if (!cart || cart.items.length === 0) {
+  if (!cart?.items || cart.items?.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-64 text-white">
         <div className="text-2xl font-semibold mb-4">Your cart is empty</div>
@@ -64,7 +67,7 @@ const Cart: React.FC = () => {
   }
 
   // Calculate total price
-  const totalPrice = cart.items.reduce(
+  const totalPrice = cart.items?.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
@@ -75,7 +78,7 @@ const Cart: React.FC = () => {
 
       <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         <div className="divide-y divide-gray-700">
-          {cart.items.map((item, index) => (
+          {cart.items?.map((item, index) => (
             <CartItemComponent
               key={index}
               item={item}
@@ -88,7 +91,7 @@ const Cart: React.FC = () => {
           <div className="flex justify-between items-center mb-4">
             <span className="text-gray-300">Subtotal</span>
             <span className="text-white font-medium">
-              ${totalPrice.toFixed(2)}
+              ${totalPrice?.toFixed(2)}
             </span>
           </div>
 

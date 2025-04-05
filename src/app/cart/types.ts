@@ -10,7 +10,7 @@ export interface CartItem {
 
 export interface CartResponse {
   cart_id: string;
-  items: CartItem[];
+  items: CartItem[] | null;
   payment_status: string;
   bill_amount: number;
 }

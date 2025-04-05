@@ -5,27 +5,39 @@ import axios, { AxiosError } from "axios";
 import { MenuResponse } from "./types";
 import { MenuItem } from "./menu-item";
 import Link from "next/link";
+import { UserDetails } from "../table/[id]/types";
+import { CartResponse } from "../cart/types";
 
 function MenuComponent() {
   const [menuItems, setMenuItems] = useState<MenuResponse[]>([]);
+  const [cart, setCart] = useState<CartResponse | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | undefined>(
     undefined
   );
 
   useEffect(() => {
-    try {
-      async function fetchMenuItems() {
-        const response = await axios.get<MenuResponse[]>(
-          `${process.env.NEXT_PUBLIC_BASEURL}/menu`
-        );
-        setMenuItems(response.data);
-        setCategories([...new Set(response.data.map((item) => item.category))]);
+    async function fetchData() {
+      const user = JSON.parse(
+        localStorage.getItem("user") || "{}"
+      ) as UserDetails;
+      try {
+        const [menuRes, cartRes] = await Promise.all([
+          axios.get<MenuResponse[]>(`${process.env.NEXT_PUBLIC_BASEURL}/menu`),
+          axios.get<CartResponse[]>(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`),
+        ]);
+
+        setMenuItems(menuRes.data);
+        setCategories([...new Set(menuRes.data.map((item) => item.category))]);
+
+        const userCart = cartRes.data.find((c) => c.cart_id === user.cart_id);
+        setCart(userCart || null);
+      } catch (e) {
+        console.error(e);
       }
-      fetchMenuItems();
-    } catch (e) {
-      console.error(e);
     }
+
+    fetchData();
   }, []);
 
   return (
@@ -80,7 +92,7 @@ function MenuComponent() {
               (item) => item.category === activeCategory || !activeCategory
             )
             .map((item, index) => (
-              <MenuItem key={index} {...item} />
+              <MenuItem key={index} {...item} cart={cart} setCart={setCart} />
             ))}
         </div>
       </div>
