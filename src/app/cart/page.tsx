@@ -35,11 +35,15 @@ const Cart: React.FC = () => {
   const updateQuantity = async (item: CartItem, newQuantity: number) => {
     if (newQuantity < 0) return;
 
+    const user = JSON.parse(
+      localStorage.getItem("user") ?? "{}"
+    ) as UserDetails;
+
     try {
       await axios.patch(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, {
         item_id: item.item_id,
         quantity: newQuantity,
-        user_id: item.user_id,
+        user_id: user.user_id,
       });
 
       fetchCart();
@@ -66,7 +70,6 @@ const Cart: React.FC = () => {
     );
   }
 
-  // Calculate total price
   const totalPrice = cart.items?.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
@@ -76,7 +79,7 @@ const Cart: React.FC = () => {
     <div className="p-6 max-w-4xl mx-auto bg-[#212121] min-h-screen">
       <h2 className="text-2xl font-bold text-white mb-6">Your Cart</h2>
 
-      <div className=" shadow-lg overflow-hidden">
+      <div className="shadow-lg overflow-hidden">
         <div className="space-y-4 divide-gray-700 mb-4">
           {cart.items?.map((item, index) => (
             <CartItemComponent

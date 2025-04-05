@@ -30,13 +30,18 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       localStorage.getItem("user") || "{}"
     ) as UserDetails;
 
+    const payload = {
+      item_id: item.item_id,
+      quantity: newQty,
+      user_id: user.user_id,
+    };
+    console.log("Payload:", payload);
+
     try {
+      console.log("Payload:", payload);
+
       if (newQty === 0 && cartItem) {
-        await axios.patch(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, {
-          item_id: item.item_id,
-          quantity: 0,
-          user_id: user.user_id,
-        });
+        await axios.patch(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, payload);
 
         setCart({
           ...cart!,
@@ -45,11 +50,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
         toast.success(`🗑️ Removed ${item.item_name} from cart`);
       } else if (!cartItem && newQty > 0) {
-        await axios.post(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, {
-          item_id: item.item_id,
-          quantity: newQty,
-          user_id: user.user_id,
-        });
+        await axios.post(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, payload);
 
         setCart({
           ...cart!,
@@ -60,8 +61,8 @@ export const MenuItem: React.FC<MenuItemProps> = ({
               item_name: item.item_name,
               price: item.price,
               image: item.images,
-              user_id: user.user_id,
-              user_name: user.user_name,
+              user_id: [user.user_id],
+              user_name: [user.user_name],
               quantity: newQty,
             },
           ],
@@ -69,17 +70,23 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
         toast.success(`🛒 Added ${item.item_name} to cart`);
       } else if (cartItem && newQty > 0) {
-        await axios.patch(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, {
-          item_id: item.item_id,
-          quantity: newQty,
-          user_id: user.user_id,
-        });
+        await axios.patch(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, payload);
+        console.log("Payload:", payload);
 
         setCart({
           ...cart!,
           items:
             cart?.items?.map((i) =>
-              i.item_id === item.item_id ? { ...i, quantity: newQty } : i
+              i.item_id === item.item_id
+                ? {
+                    ...i,
+                    quantity: newQty,
+                    user_id: Array.from(new Set([...i.user_id, user.user_id])),
+                    user_name: Array.from(
+                      new Set([...i.user_name, user.user_name])
+                    ),
+                  }
+                : i
             ) ?? [],
         });
 

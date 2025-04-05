@@ -47,7 +47,16 @@ const CartItemComponent: React.FC<CartItemProps> = ({
           <div className="text-white font-semibold text-base">
             {item.item_name}
           </div>
-          <div className="text-gray-400 text-sm">By {item.user_name}</div>
+          <div className="text-gray-400 text-sm">
+            By{" "}
+            {item.user_name.map((name, index) =>
+              index === item.user_id.length - 1 ? (
+                <span>{name}</span>
+              ) : (
+                <span>{name}, </span>
+              )
+            )}
+          </div>
           <div className="text-[#FFA050] text-sm mt-1">
             ${item.price.toFixed(2)}
           </div>

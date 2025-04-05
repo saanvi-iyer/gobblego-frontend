@@ -3,8 +3,8 @@ export interface CartItem {
   item_name: string;
   price: number;
   quantity: number;
-  user_id: string;
-  user_name: string;
+  user_id: string[];
+  user_name: string[];
   image: string;
 }
 
