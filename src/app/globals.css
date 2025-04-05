@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 @font-face {
-    font-family: 'GiazaStencil';
-    src: url('/assets/fonts/giazaStencil.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
+  font-family: "GiazaStencil";
+  src: url("/assets/fonts/giazaStencil.woff2") format("woff2");
+  font-weight: normal;
+  font-style: normal;
 }
 
 .font-giaza {
-    font-family: 'GiazaStencil', sans-serif;
+  font-family: "GiazaStencil", sans-serif;
 }

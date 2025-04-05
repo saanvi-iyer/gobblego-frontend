@@ -73,11 +73,11 @@ const Cart: React.FC = () => {
   );
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto bg-[#212121] min-h-screen">
       <h2 className="text-2xl font-bold text-white mb-6">Your Cart</h2>
 
-      <div className="bg-gray-800 rounded-xl shadow-lg overflow-hidden">
-        <div className="divide-y divide-gray-700">
+      <div className=" shadow-lg overflow-hidden">
+        <div className="space-y-4 divide-gray-700 mb-4">
           {cart.items?.map((item, index) => (
             <CartItemComponent
               key={index}
@@ -87,7 +87,7 @@ const Cart: React.FC = () => {
           ))}
         </div>
 
-        <div className="p-6 bg-gray-900">
+        <div className="p-6 bg-[#2D2D2D] rounded-xl">
           <div className="flex justify-between items-center mb-4">
             <span className="text-gray-300">Subtotal</span>
             <span className="text-white font-medium">
@@ -95,11 +95,11 @@ const Cart: React.FC = () => {
             </span>
           </div>
 
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center my-6">
             <div className="flex items-center">
               <span className="text-gray-300 mr-2">Payment Status:</span>
               <span
-                className={`font-medium ${
+                className={`font-medium capitalize ${
                   cart.payment_status === "Paid"
                     ? "text-green-400"
                     : "text-yellow-400"

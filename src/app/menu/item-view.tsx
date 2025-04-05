@@ -15,7 +15,7 @@ export default function ItemModal({
       onClick={onClose}
     >
       <div
-        className="bg-gray-900 p-6 rounded-2xl w-4/5 shadow-lg text-white flex flex-col gap-3"
+        className="bg-[#2D2D2D] p-6 rounded-2xl w-4/5 shadow-lg text-white flex flex-col gap-3"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-xl font-bold">{item.item_name}</h2>

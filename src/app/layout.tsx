@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Macondo_Swash_Caps } from "next/font/google";
 import "./globals.css";
+import "react-toastify/dist/ReactToastify.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,7 +36,15 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${macondoSwashCaps.variable} antialiased bg-black`}
       >
         {children}
-        <ToastContainer />
+        <ToastContainer
+          position="top-center"
+          autoClose={1500}
+          hideProgressBar={false}
+          closeOnClick
+          pauseOnHover
+          draggable
+          theme="dark"
+        />
       </body>
     </html>
   );

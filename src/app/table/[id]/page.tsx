@@ -47,7 +47,7 @@ export default function Table() {
   };
 
   return (
-    <div className="bg-[#171717] min-h-screen text-white flex flex-col items-center p-8">
+    <div className="bg-[#212121] min-h-screen text-white flex flex-col items-center p-8">
       <div className="w-full max-w-md">
         <button
           onClick={() => router.back()}
@@ -66,7 +66,7 @@ export default function Table() {
           />
           <button
             onClick={joinTable}
-            className="bg-[#FFA050] hover:bg-[#D68037] text-[#171717] font-bold py-3 px-4 rounded-md transition-colors"
+            className="bg-[#FFA050] hover:bg-[#D68037] text-[#212121] font-bold py-3 px-4 rounded-md transition-colors"
           >
             Join Table
           </button>
@@ -84,7 +84,7 @@ export default function Table() {
               <span
                 className={`px-2 py-1 rounded-full text-xs ${
                   member.is_leader
-                    ? "bg-[#FFA050] text-[#171717]"
+                    ? "bg-[#FFA050] text-[#212121]"
                     : "bg-[#656567]"
                 }`}
               >

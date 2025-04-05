@@ -41,7 +41,7 @@ function MenuComponent() {
   }, []);
 
   return (
-    <div className="text-white min-h-screen bg-[#171717]">
+    <div className="text-white min-h-screen bg-[#212121]">
       <div className="p-4">
         <div className="text-3xl font-bold flex flex-row items-center justify-between">
           <p>Menu</p>

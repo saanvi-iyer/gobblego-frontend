@@ -5,7 +5,6 @@ import { Plus, Minus } from "lucide-react";
 import { MenuResponse } from "./types";
 import ItemModal from "./item-view";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { UserDetails } from "../table/[id]/types";
 import { CartResponse } from "../cart/types";
@@ -20,7 +19,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
   ...item
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const user = JSON.parse(localStorage.getItem("user") || "{}") as UserDetails;
+
   const cartItem = cart?.items?.find((i) => i.item_id === item.item_id);
   const quantity = cartItem?.quantity ?? 0;
 
@@ -44,7 +43,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
           items: cart?.items?.filter((i) => i.item_id !== item.item_id) ?? [],
         });
 
-        toast.info(`${item.item_name} removed from cart`);
+        toast.success(`🗑️ Removed ${item.item_name} from cart`);
       } else if (!cartItem && newQty > 0) {
         await axios.post(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, {
           item_id: item.item_id,
@@ -68,9 +67,8 @@ export const MenuItem: React.FC<MenuItemProps> = ({
           ],
         });
 
-        toast.success(`${item.item_name} added to cart`);
+        toast.success(`🛒 Added ${item.item_name} to cart`);
       } else if (cartItem && newQty > 0) {
-        // Existing item, update quantity
         await axios.patch(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, {
           item_id: item.item_id,
           quantity: newQty,
@@ -85,11 +83,11 @@ export const MenuItem: React.FC<MenuItemProps> = ({
             ) ?? [],
         });
 
-        toast.success(`${item.item_name} quantity updated`);
+        toast.success(`🔄 Updated ${item.item_name} quantity to ${newQty}`);
       }
     } catch (err) {
       console.error("Error updating cart:", err);
-      toast.error("Failed to update cart");
+      toast.error("🚨 Failed to update cart. Please try again.");
     }
   };
 
@@ -97,7 +95,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
     <>
       <div
         key={item.item_id}
-        className="relative rounded-lg overflow-hidden bg-gray-900 shadow-lg cursor-pointer"
+        className="relative rounded-lg overflow-hidden bg-[#2D2D2D] shadow-lg cursor-pointer"
         onClick={() => setIsModalOpen(true)}
       >
         <div className="relative h-[300px]">
@@ -107,7 +105,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
             className="w-full h-full object-cover"
           />
         </div>
-        <div className="absolute bottom-0 w-full p-4 flex justify-between items-center bg-[#171717]/70 rounded-lg">
+        <div className="absolute bottom-0 w-full p-4 flex justify-between items-center bg-[#212121]/70 rounded-lg">
           <div className="flex flex-col gap-1">
             <div className="text-lg font-bold">{item.item_name}</div>
             <div className="flex gap-1 items-center text-white text-base font-semibold">
