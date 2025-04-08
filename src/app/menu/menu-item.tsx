@@ -13,6 +13,7 @@ interface MenuItemProps extends MenuResponse {
   cart: CartResponse | null;
   setCart: React.Dispatch<React.SetStateAction<CartResponse | null>>;
 }
+
 export const MenuItem: React.FC<MenuItemProps> = ({
   cart,
   setCart,
