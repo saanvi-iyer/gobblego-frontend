@@ -8,6 +8,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { UserDetails } from "../table/[id]/types";
 import { CartResponse } from "../cart/types";
+import api from "../api";
 
 interface MenuItemProps extends MenuResponse {
   cart: CartResponse | null;
@@ -42,7 +43,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
       console.log("Payload:", payload);
 
       if (newQty === 0 && cartItem) {
-        await axios.patch(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, payload);
+        await api.patch(`/cart/`, payload);
 
         setCart({
           ...cart!,
@@ -51,7 +52,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
         toast.success(`🗑️ Removed ${item.item_name} from cart`);
       } else if (!cartItem && newQty > 0) {
-        await axios.post(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, payload);
+        await api.post(`/cart/`, payload);
 
         setCart({
           ...cart!,
@@ -71,7 +72,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
         toast.success(`🛒 Added ${item.item_name} to cart`);
       } else if (cartItem && newQty > 0) {
-        await axios.patch(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, payload);
+        await api.patch(`/cart/`, payload);
         console.log("Payload:", payload);
 
         setCart({

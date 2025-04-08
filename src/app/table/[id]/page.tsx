@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { UserDetails } from "./types";
+import api from "@/app/api";
 
 type User = {
   user_id: string;
@@ -20,9 +21,7 @@ export default function Table() {
   const params = useParams();
 
   useEffect(() => {
-    axios
-      .get(`${process.env.NEXT_PUBLIC_BASEURL}/users/${params.id}`)
-      .then((res) => setMembers(res.data));
+    api.get(`/users/${params.id}`).then((res) => setMembers(res.data));
   }, [params.id]);
 
   const joinTable = async () => {
@@ -31,13 +30,10 @@ export default function Table() {
       return;
     }
     try {
-      const response = await axios.post<UserDetails>(
-        `${process.env.NEXT_PUBLIC_BASEURL}/users/`,
-        {
-          cart_id: params.id,
-          user_name: userName.trim(),
-        }
-      );
+      const response = await api.post<UserDetails>(`/users/`, {
+        cart_id: params.id,
+        user_name: userName.trim(),
+      });
       localStorage.setItem("user", JSON.stringify(response.data));
       router.push("/menu");
     } catch (e) {

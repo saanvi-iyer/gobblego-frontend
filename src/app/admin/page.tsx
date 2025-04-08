@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { CartItem, CartResponse } from "../cart/types";
 import CartItemComponent from "../cart/cart-item";
+import api from "../api";
 
 const AdminDashboard: React.FC = () => {
   const [carts, setCarts] = useState<CartResponse[]>([]);
@@ -24,9 +25,7 @@ const AdminDashboard: React.FC = () => {
   const fetchCarts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get<CartResponse[]>(
-        `${process.env.NEXT_PUBLIC_BASEURL}/cart/`
-      );
+      const res = await api.get<CartResponse[]>(`/cart/`);
       setCarts(res.data || []);
       setLoading(false);
     } catch (err) {
@@ -39,7 +38,7 @@ const AdminDashboard: React.FC = () => {
     if (newQuantity < 0) return;
 
     try {
-      await axios.patch(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`, {
+      await api.patch(`/cart/`, {
         item_id: item.item_id,
         quantity: newQuantity,
         user_id: item.user_id[0], // Using first user_id from the array
@@ -62,7 +61,7 @@ const AdminDashboard: React.FC = () => {
   const markAsPaid = async (cartId: string) => {
     try {
       // Replace with actual API call to update payment status
-      await axios.patch(`${process.env.NEXT_PUBLIC_BASEURL}/cart/payment`, {
+      await api.patch(`/cart/payment`, {
         cart_id: cartId,
         payment_status: "Paid",
       });

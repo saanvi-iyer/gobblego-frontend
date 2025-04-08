@@ -7,6 +7,7 @@ import { MenuItem } from "./menu-item";
 import Link from "next/link";
 import { UserDetails } from "../table/[id]/types";
 import { CartResponse } from "../cart/types";
+import api from "../api";
 
 function MenuComponent() {
   const [menuItems, setMenuItems] = useState<MenuResponse[]>([]);
@@ -23,8 +24,8 @@ function MenuComponent() {
       ) as UserDetails;
       try {
         const [menuRes, cartRes] = await Promise.all([
-          axios.get<MenuResponse[]>(`${process.env.NEXT_PUBLIC_BASEURL}/menu`),
-          axios.get<CartResponse[]>(`${process.env.NEXT_PUBLIC_BASEURL}/cart/`),
+          api.get<MenuResponse[]>(`/menu`),
+          api.get<CartResponse[]>(`/cart/`),
         ]);
 
         setMenuItems(menuRes.data);
