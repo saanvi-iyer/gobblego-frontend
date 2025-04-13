@@ -1,18 +1,15 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { Plus, Minus } from "lucide-react";
-import { MenuResponse } from "./types";
-import ItemModal from "./item-view";
 import { toast } from "react-toastify";
-import axios from "axios";
-import { UserDetails } from "../table/[id]/types";
-import { CartResponse } from "../cart/types";
 import api from "../api";
+import { CartItem, MenuItem as MenuItemType } from "../cart/types";
+import { UserDetails } from "../table/[id]/types";
+import ItemModal from "./item-view";
 
-interface MenuItemProps extends MenuResponse {
-  cart: CartResponse | null;
-  setCart: React.Dispatch<React.SetStateAction<CartResponse | null>>;
+interface MenuItemProps extends MenuItemType {
+  cart: CartItem[] | null;
+  setCart: React.Dispatch<React.SetStateAction<CartItem[] | null>>;
 }
 
 export const MenuItem: React.FC<MenuItemProps> = ({
@@ -21,89 +18,66 @@ export const MenuItem: React.FC<MenuItemProps> = ({
   ...item
 }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [quantity, setQuantity] = useState(0);
 
-  const cartItem = cart?.items?.find((i) => i.item_id === item.item_id);
-  const quantity = cartItem?.quantity ?? 0;
+  useEffect(() => {
+    if (cart) {
+      const cartItem = cart.find((ci) => ci.item_id === item.item_id);
+      setQuantity(cartItem?.quantity || 0);
+    }
+  }, [cart, item.item_id]);
 
-  const updateQuantity = async (newQty: number) => {
-    if (newQty < 0) return;
-
-    const user = JSON.parse(
-      localStorage.getItem("user") || "{}"
-    ) as UserDetails;
-
-    const payload = {
-      item_id: item.item_id,
-      quantity: newQty,
-      user_id: user.user_id,
-    };
-    console.log("Payload:", payload);
-
+  const updateCart = async (newQuantity: number) => {
     try {
-      console.log("Payload:", payload);
-
-      if (newQty === 0 && cartItem) {
-        await api.patch(`/cart/`, payload);
-
-        setCart({
-          ...cart!,
-          items: cart?.items?.filter((i) => i.item_id !== item.item_id) ?? [],
-        });
-
-        toast.success(`🗑️ Removed ${item.item_name} from cart`);
-      } else if (!cartItem && newQty > 0) {
-        await api.post(`/cart/`, payload);
-
-        setCart({
-          ...cart!,
-          items: [
-            ...(cart?.items ?? []),
-            {
-              item_id: item.item_id,
-              item_name: item.item_name,
-              price: item.price,
-              image: item.images,
-              user_id: [user.user_id],
-              user_name: [user.user_name],
-              quantity: newQty,
-            },
-          ],
-        });
-
-        toast.success(`🛒 Added ${item.item_name} to cart`);
-      } else if (cartItem && newQty > 0) {
-        await api.patch(`/cart/`, payload);
-        console.log("Payload:", payload);
-
-        setCart({
-          ...cart!,
-          items:
-            cart?.items?.map((i) =>
-              i.item_id === item.item_id
-                ? {
-                    ...i,
-                    quantity: newQty,
-                    user_id: Array.from(new Set([...i.user_id, user.user_id])),
-                    user_name: Array.from(
-                      new Set([...i.user_name, user.user_name])
-                    ),
-                  }
-                : i
-            ) ?? [],
-        });
-
-        toast.success(`🔄 Updated ${item.item_name} quantity to ${newQty}`);
+      const user = JSON.parse(
+        localStorage.getItem("user") || "{}"
+      ) as UserDetails;
+      if (!user?.cart_id) {
+        toast.error("Please join a table first");
+        return;
       }
-    } catch (err) {
-      console.error("Error updating cart:", err);
-      toast.error("🚨 Failed to update cart. Please try again.");
+
+      const cartItem = cart?.find((ci) => ci.item_id === item.item_id);
+
+      if (cartItem) {
+        if (newQuantity > 0) {
+          await api.put(`/cart/items/${cartItem.cart_item_id}`, {
+            quantity: newQuantity,
+            notes: cartItem.notes,
+          });
+        } else {
+          await api.delete(`/cart/items/${cartItem.cart_item_id}`);
+        }
+      } else if (newQuantity > 0) {
+        await api.post("/cart/items", {
+          item_id: item.item_id,
+          quantity: newQuantity,
+          notes: "",
+        });
+      }
+
+      setQuantity(newQuantity);
+      await refetchCart();
+      toast.success("Cart updated successfully");
+    } catch (error) {
+      console.error("Cart operation failed:", error);
+      toast.error("Failed to update cart");
+    }
+  };
+
+  const refetchCart = async () => {
+    try {
+      const { data } = await api.get<CartItem[]>("/cart/items");
+      setCart(data);
+    } catch (error) {
+      console.error("Cart refresh failed:", error);
+      toast.error("Failed to load cart data");
     }
   };
 
   return (
     <>
       <div
-        key={item.item_id}
         className="relative rounded-lg overflow-hidden bg-[#2D2D2D] shadow-lg cursor-pointer"
         onClick={() => setIsModalOpen(true)}
       >
@@ -129,11 +103,11 @@ export const MenuItem: React.FC<MenuItemProps> = ({
               className="flex items-center gap-2 bg-[#FFA050] hover:bg-[#D68037] transition-colors rounded-lg px-2 py-1"
               onClick={(e) => e.stopPropagation()}
             >
-              <button onClick={() => updateQuantity(quantity - 1)}>
+              <button onClick={() => updateCart(quantity - 1)}>
                 <Minus size={18} color="black" />
               </button>
               <span className="text-black font-semibold">{quantity}</span>
-              <button onClick={() => updateQuantity(quantity + 1)}>
+              <button onClick={() => updateCart(quantity + 1)}>
                 <Plus size={18} color="black" />
               </button>
             </div>
@@ -142,7 +116,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
               className="p-2 bg-[#FFA050] hover:bg-[#D68037] transition-colors rounded-lg"
               onClick={(e) => {
                 e.stopPropagation();
-                updateQuantity(1);
+                updateCart(1);
               }}
             >
               <Plus size={20} color="black" />
