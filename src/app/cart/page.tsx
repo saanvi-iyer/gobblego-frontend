@@ -32,7 +32,7 @@ const Cart: React.FC = () => {
     try {
       const { data } = await api.get<CartItem[]>("/cart/items");
       setCartItems(data);
-      // Update localStorage for navbar badge
+
       localStorage.setItem("cartData", JSON.stringify(data));
     } catch (err) {
       console.error("Error fetching cart:", err);
@@ -49,7 +49,7 @@ const Cart: React.FC = () => {
       });
 
       toast.success("Order placed successfully!");
-      // Clear cart data in localStorage
+
       localStorage.setItem("cartData", JSON.stringify([]));
       router.push(`/orders`);
     } catch (error) {
@@ -77,13 +77,11 @@ const Cart: React.FC = () => {
     }
   };
 
-  // Calculate totals
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.item_price * item.quantity,
     0
   );
 
-  // Calculate estimated time
   const estimatedTime = cartItems.reduce((maxTime, item) => {
     const itemTime = item.item.est_prep_time || 0;
     return Math.max(maxTime, itemTime);

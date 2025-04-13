@@ -1,238 +1,223 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import axios from "axios";
 
+import { useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import {
-  Loader2,
-  ShoppingCart,
-  DollarSign,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-import { CartItem, CartResponse } from "../cart/types";
-import CartItemComponent from "../cart/cart-item";
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableCell,
+} from "@/components/ui/table";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
 import api from "../api";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { toast } from "react-toastify";
 
-const AdminDashboard: React.FC = () => {
-  const [carts, setCarts] = useState<CartResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [expandedCartId, setExpandedCartId] = useState<string | null>(null);
+interface Item {
+  item_name: string;
+  price: number;
+  category: string;
+  quantity: number;
+}
+
+interface OrderItem {
+  item: Item;
+  quantity: number;
+  price: number;
+}
+
+interface Order {
+  order_id: string;
+  cart_id: string;
+  status: string;
+  total_amount: number;
+  created_at: string;
+  order_items: OrderItem[];
+}
+
+const statusOptions = [
+  "pending",
+  "preparing",
+  "ready",
+  "payment_failed",
+  "payment_initialized",
+  "served",
+  "completed",
+];
+
+export default function AdminOrdersPage() {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loadingOrderId, setLoadingOrderId] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchCarts();
+    const fetchOrders = async () => {
+      try {
+        const response = await api.get<Order[]>("/orders/all");
+        setOrders(response.data);
+      } catch (e) {
+        console.error(e);
+        toast.error("Failed to fetch orders.");
+      }
+    };
+
+    void fetchOrders();
   }, []);
 
-  const fetchCarts = async () => {
-    setLoading(true);
+  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+    setLoadingOrderId(orderId);
     try {
-      const res = await api.get<CartResponse[]>(`/cart/`);
-      setCarts(res.data || []);
-      setLoading(false);
-    } catch (err) {
-      console.error("Error fetching carts:", err);
-      setLoading(false);
+      await api.put(`/orders/${orderId}/status`, { status: newStatus });
+
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.order_id === orderId ? { ...o, status: newStatus } : o
+        )
+      );
+
+      toast.success("Status updated successfully!");
+    } catch (e) {
+      console.error("Failed to update status", e);
+      toast.error("Failed to update status.");
+    } finally {
+      setLoadingOrderId(null);
     }
   };
 
-  const updateQuantity = async (item: CartItem, newQuantity: number) => {
-    if (newQuantity < 0) return;
-
-    try {
-      await api.patch(`/cart/`, {
-        item_id: item.item_id,
-        quantity: newQuantity,
-        user_id: item.user_id[0], // Using first user_id from the array
-      });
-
-      fetchCarts();
-    } catch (err) {
-      console.error("Error updating quantity:", err);
-    }
-  };
-
-  const toggleCartExpansion = (cartId: string) => {
-    if (expandedCartId === cartId) {
-      setExpandedCartId(null);
-    } else {
-      setExpandedCartId(cartId);
-    }
-  };
-
-  const markAsPaid = async (cartId: string) => {
-    try {
-      // Replace with actual API call to update payment status
-      await api.patch(`/cart/payment`, {
-        cart_id: cartId,
-        payment_status: "Paid",
-      });
-      fetchCarts();
-    } catch (err) {
-      console.error("Error updating payment status:", err);
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64 text-white">
-        <Loader2 className="w-8 h-8 mr-2 animate-spin" />
-        <span>Loading dashboard...</span>
-      </div>
-    );
-  }
-
-  // Analytics from available cart data
-  const totalCarts = carts.length;
-  const paidCarts = carts.filter(
-    (cart) => cart.payment_status === "Paid"
-  ).length;
-  const pendingCarts = carts.filter(
-    (cart) => cart.payment_status !== "Paid"
-  ).length;
-  const totalRevenue = carts.reduce((sum, cart) => sum + cart.bill_amount, 0);
+  const totalRevenue = orders.reduce((sum, o) => sum + o.total_amount, 0);
+  const totalOrders = orders.length;
+  const totalItemsSold = orders.reduce(
+    (count, o) =>
+      count + o.order_items.reduce((acc, item) => acc + item.quantity, 0),
+    0
+  );
 
   return (
-    <div className="p-6 max-w-6xl mx-auto bg-[#212121] min-h-screen">
-      <h1 className="text-2xl font-bold text-white mb-6">Admin Dashboard</h1>
+    <div className="p-6 space-y-6 bg-black min-h-screen text-white">
+      <h1 className="text-3xl font-bold">Admin Dashboard</h1>
 
-      {/* Analytics Cards */}
-      <div className="grid grid-cols-3 gap-6 mb-8">
-        <div className="bg-[#2D2D2D] p-6 rounded-xl shadow">
-          <div className="flex items-center mb-4">
-            <ShoppingCart className="w-6 h-6 mr-3 text-[#FF8030]" />
-            <h3 className="text-white text-lg font-medium">Orders</h3>
-          </div>
-          <div className="flex justify-between">
-            <div>
-              <p className="text-gray-400 text-sm">Total</p>
-              <p className="text-white text-2xl font-bold">{totalCarts}</p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Pending</p>
-              <p className="text-yellow-400 text-2xl font-bold">
-                {pendingCarts}
-              </p>
-            </div>
-            <div>
-              <p className="text-gray-400 text-sm">Paid</p>
-              <p className="text-green-400 text-2xl font-bold">{paidCarts}</p>
-            </div>
-          </div>
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-zinc-900 border-zinc-700 text-white">
+          <CardContent className="p-4">
+            <p className="text-zinc-400">Total Revenue</p>
+            <p className="text-xl font-bold">${totalRevenue.toFixed(2)}</p>
+          </CardContent>
+        </Card>
 
-        <div className="bg-[#2D2D2D] p-6 rounded-xl shadow">
-          <div className="flex items-center mb-4">
-            <DollarSign className="w-6 h-6 mr-3 text-[#FF8030]" />
-            <h3 className="text-white text-lg font-medium">Total Revenue</h3>
-          </div>
-          <p className="text-white text-3xl font-bold">
-            ${totalRevenue.toFixed(2)}
-          </p>
-        </div>
+        <Card className="bg-zinc-900 border-zinc-700 text-white">
+          <CardContent className="p-4">
+            <p className="text-zinc-400">Total Orders</p>
+            <p className="text-xl font-bold">{totalOrders}</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-zinc-900 border-zinc-700 text-white">
+          <CardContent className="p-4">
+            <p className="text-zinc-400">Items Sold</p>
+            <p className="text-xl font-bold">{totalItemsSold}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Orders List Section */}
-      <div>
-        <h2 className="text-xl font-semibold text-white mb-4">All Orders</h2>
+      <Tabs defaultValue="all" className="text-white">
+        <TabsList className="bg-zinc-800 text-white border-zinc-700">
+          <TabsTrigger value="all" className="data-[state=active]:bg-zinc-700">
+            All Orders
+          </TabsTrigger>
+        </TabsList>
 
-        <div className="bg-[#2D2D2D] rounded-xl shadow overflow-hidden">
-          {/* Table Header */}
-          <div className="grid grid-cols-4 p-4 bg-[#3D3D3D] text-white font-medium">
-            <div>Order ID</div>
-            <div>Items</div>
-            <div>Amount</div>
-            <div>Status</div>
-          </div>
-
-          {/* Orders List */}
-          {carts.length > 0 ? (
-            <div className="divide-y divide-gray-700">
-              {carts.map((cart, index) => (
-                <div key={index} className="text-white">
-                  {/* Order Summary Row */}
-                  <div
-                    className="grid grid-cols-4 p-4 cursor-pointer hover:bg-[#343434]"
-                    onClick={() => toggleCartExpansion(cart.cart_id)}
-                  >
-                    <div className="font-medium">#{cart.cart_id}</div>
-                    <div>{cart.items?.length || 0} items</div>
-                    <div>${cart.bill_amount.toFixed(2)}</div>
-                    <div className="flex items-center justify-between">
-                      <span
-                        className={`px-3 py-1 rounded-full text-sm ${
-                          cart.payment_status === "Paid"
-                            ? "bg-green-900 text-green-400"
-                            : "bg-yellow-900 text-yellow-400"
-                        }`}
-                      >
-                        {cart.payment_status}
-                      </span>
-                      {expandedCartId === cart.cart_id ? (
-                        <ChevronUp className="w-5 h-5 text-gray-400" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5 text-gray-400" />
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Expanded Order Details */}
-                  {expandedCartId === cart.cart_id && (
-                    <div className="bg-[#262626] p-6">
-                      <h3 className="text-lg font-medium mb-4">
-                        Order Details
-                      </h3>
-
-                      {cart.items && cart.items.length > 0 ? (
-                        <div className="space-y-4 mb-6">
-                          {cart.items.map((item, index) => (
-                            <CartItemComponent
-                              key={index}
-                              item={item}
-                              updateQuantity={updateQuantity}
-                            />
-                          ))}
-                        </div>
-                      ) : (
-                        <p className="text-gray-400 mb-6">
-                          No items in this order
-                        </p>
-                      )}
-
-                      <div className="flex justify-between items-center border-t border-gray-700 pt-4">
-                        <div>
-                          <p className="text-gray-400">
-                            Customer:{" "}
-                            {cart.items?.[0]?.user_name?.[0] || "Unknown"}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <p className="text-white font-medium">
-                            Total: ${cart.bill_amount.toFixed(2)}
-                          </p>
-                          {cart.payment_status !== "Paid" && (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                markAsPaid(cart.cart_id);
-                              }}
-                              className="px-4 py-2 bg-gradient-to-r from-[#FF8030] to-[#FFA050] hover:from-[#FF7020] hover:to-[#FF9040] text-white font-medium rounded-lg transition-all duration-200"
-                            >
-                              Mark as Paid
-                            </button>
+        <TabsContent value="all">
+          <Table className="bg-zinc-900 text-white border border-zinc-700 rounded-md">
+            <TableHeader className="bg-zinc-800">
+              <TableRow>
+                <TableCell className="text-zinc-300">Order ID</TableCell>
+                <TableCell className="text-zinc-300">Cart ID</TableCell>
+                <TableCell className="text-zinc-300">Status</TableCell>
+                <TableCell className="text-zinc-300">Total</TableCell>
+                <TableCell className="text-zinc-300">Created</TableCell>
+                <TableCell className="text-zinc-300">Items</TableCell>
+                <TableCell className="text-zinc-300">Actions</TableCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {orders.map((order) => (
+                <TableRow key={order.order_id}>
+                  <TableCell className="text-xs text-zinc-400">
+                    {order.order_id.slice(0, 8)}
+                  </TableCell>
+                  <TableCell className="text-xs text-zinc-400">
+                    {order.cart_id.slice(0, 8)}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className="bg-green-600 text-white">
+                      {order.status}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>${order.total_amount.toFixed(2)}</TableCell>
+                  <TableCell>
+                    {format(new Date(order.created_at), "PPPpp")}
+                  </TableCell>
+                  <TableCell>
+                    <ul className="text-sm list-disc list-inside text-zinc-300">
+                      {order.order_items.map((item, idx) => (
+                        <li key={idx}>
+                          {item.quantity}x {item.item.item_name} (
+                          {item.item.category})
+                        </li>
+                      ))}
+                    </ul>
+                  </TableCell>
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="secondary"
+                          className="bg-zinc-800 text-white"
+                          disabled={loadingOrderId === order.order_id}
+                        >
+                          {loadingOrderId === order.order_id ? (
+                            <>
+                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                              Updating...
+                            </>
+                          ) : (
+                            <>
+                              Change Status
+                              <ChevronDown className="ml-2 h-4 w-4" />
+                            </>
                           )}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="bg-zinc-900 border-zinc-700 text-white">
+                        {statusOptions.map((status) => (
+                          <DropdownMenuItem
+                            key={status}
+                            onClick={() =>
+                              updateOrderStatus(order.order_id, status)
+                            }
+                            className="cursor-pointer hover:bg-zinc-700"
+                          >
+                            {status}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
               ))}
-            </div>
-          ) : (
-            <div className="p-6 text-center text-gray-400">No orders found</div>
-          )}
-        </div>
-      </div>
+            </TableBody>
+          </Table>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-export default AdminDashboard;
+}
