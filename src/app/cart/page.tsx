@@ -44,7 +44,7 @@ const Cart: React.FC = () => {
       });
 
       toast.success("Order placed successfully!");
-      router.push(`/orders/${data.order.order_id}`);
+      router.push(`/orders`);
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error("Failed to place order. Please try again.");
