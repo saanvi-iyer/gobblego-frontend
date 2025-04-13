@@ -23,8 +23,10 @@ const CartItemComponent: React.FC<CartItemProps> = ({
 
       if (newQty === 0) {
         toast.info(`${item.item.item_name} removed from cart`);
+      } else if (newQty > item.quantity) {
+        toast.success(`Added another ${item.item.item_name}`);
       } else {
-        toast.success(`${item.item.item_name} quantity updated to ${newQty}`);
+        toast.success(`Updated ${item.item.item_name} quantity`);
       }
     } catch (error) {
       toast.error("Failed to update cart");
@@ -33,55 +35,71 @@ const CartItemComponent: React.FC<CartItemProps> = ({
   };
 
   return (
-    <div className="relative rounded-xl overflow-hidden bg-[#2D2D2D] shadow-md">
-      <div className="flex items-center gap-4 p-4">
-        <img
-          src={`/assets/images/${item.item.images}`}
-          alt={item.item.item_name}
-          className="w-16 h-16 object-cover rounded-lg shadow"
-        />
+    <div className="rounded-xl overflow-hidden bg-[#2D2D2D] shadow-md">
+      <div className="flex gap-3 p-3">
+        <div className="relative w-20 h-20 rounded-lg overflow-hidden flex-shrink-0">
+          <img
+            src={`/assets/images/${item.item.images}`}
+            alt={item.item.item_name}
+            className="w-full h-full object-cover"
+          />
+        </div>
 
-        <div className="flex-1">
-          <div className="text-white font-semibold text-base">
-            {item.item.item_name}
+        <div className="flex-1 min-w-0">
+          <div className="flex justify-between items-start">
+            <div className="truncate pr-2">
+              <h3 className="text-white font-semibold truncate">
+                {item.item.item_name}
+              </h3>
+              <p className="text-[#FFA050] text-sm mt-0.5">
+                ${item.item_price.toFixed(2)}
+              </p>
+            </div>
+            <p className="text-white font-medium text-right whitespace-nowrap">
+              ${total}
+            </p>
           </div>
-          <div className="text-gray-400 text-sm">
-            {item.user_id && (
-              <span>Added by user {item.user_id.substring(0, 8)}</span>
-            )}
-          </div>
-          <div className="text-[#FFA050] text-sm mt-1">
-            ${item.item_price.toFixed(2)}
-          </div>
+
           {item.notes && (
-            <div className="text-gray-400 text-sm italic mt-1">
+            <div className="text-gray-400 text-xs mt-1 italic">
               Note: {item.notes}
             </div>
           )}
-        </div>
 
-        <div className="flex flex-col items-end gap-2">
-          <div className="flex items-center bg-[#FFA050] hover:bg-[#D68037] transition-colors rounded-lg px-2 py-1">
-            <button onClick={() => handleUpdate(item.quantity - 1)}>
-              <Minus size={16} color="black" />
-            </button>
-            <span className="px-2 text-black font-semibold">
-              {item.quantity}
-            </span>
-            <button onClick={() => handleUpdate(item.quantity + 1)}>
-              <Plus size={16} color="black" />
-            </button>
-          </div>
+          {item.user_id && (
+            <div className="text-gray-500 text-xs mt-1">
+              Added by: {item.user_id.substring(0, 8)}
+            </div>
+          )}
 
-          <div className="flex items-center gap-2">
-            <p className="text-white font-semibold">${total}</p>
-            <button
-              onClick={() => handleUpdate(0)}
-              className="p-2 bg-red-600 hover:bg-red-700 rounded-full"
-              aria-label="Remove item"
-            >
-              <Trash2 size={16} color="white" />
-            </button>
+          <div className="flex justify-between items-center mt-2">
+            <div className="flex items-center">
+              <button
+                onClick={() => handleUpdate(0)}
+                className="p-1.5 text-gray-400 hover:text-red-500 transition-colors"
+                aria-label="Remove item"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+
+            <div className="flex items-center bg-[#3D3D3D] rounded-lg overflow-hidden">
+              <button
+                onClick={() => handleUpdate(item.quantity - 1)}
+                className="p-1.5 text-white hover:bg-[#4D4D4D] transition-colors"
+              >
+                <Minus size={16} />
+              </button>
+              <span className="px-3 py-1 text-white font-medium">
+                {item.quantity}
+              </span>
+              <button
+                onClick={() => handleUpdate(item.quantity + 1)}
+                className="p-1.5 text-white hover:bg-[#4D4D4D] transition-colors"
+              >
+                <Plus size={16} />
+              </button>
+            </div>
           </div>
         </div>
       </div>

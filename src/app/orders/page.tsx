@@ -6,10 +6,12 @@ import {
   ChevronUp,
   Clock,
   CreditCard,
+  ArrowLeft,
 } from "lucide-react";
 import Script from "next/script";
 import api from "../api";
 import { toast } from "react-toastify";
+import Link from "next/link";
 
 interface OrderItem {
   item_id: string;
@@ -43,7 +45,7 @@ const OrdersPage: React.FC = () => {
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentDetails, setPaymentDetails] = useState<any>(null);
-  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false); // New loading state
+  const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
 
   useEffect(() => {
     fetchOrders();
@@ -72,23 +74,11 @@ const OrdersPage: React.FC = () => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
       month: "short",
       day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     }).format(date);
-  };
-
-  const updateOrderStatus = async (orderId: string, status: string) => {
-    try {
-      await api.patch(`/orders/${orderId}`, {
-        status: status,
-      });
-      fetchOrders();
-    } catch (err) {
-      console.error("Error updating order status:", err);
-    }
   };
 
   const handleScriptError = () => {
@@ -102,11 +92,11 @@ const OrdersPage: React.FC = () => {
       if (typeof window !== "undefined" && (window as any).Razorpay) {
         openRazorpayCheckout(response.data);
       } else {
-        alert("Razorpay SDK failed to load. Please try again later.");
+        toast.error("Razorpay SDK failed to load. Please try again later.");
       }
     } catch (error) {
       console.error("Error creating order:", error);
-      alert(
+      toast.error(
         `Error: ${
           error instanceof Error ? error.message : "Unknown error occurred"
         }`
@@ -137,7 +127,7 @@ const OrdersPage: React.FC = () => {
         cart_id: orders[0]?.cart_id || "",
       },
       theme: {
-        color: "#3399cc",
+        color: "#FFA050",
       },
     };
 
@@ -151,7 +141,7 @@ const OrdersPage: React.FC = () => {
   };
 
   const handlePaymentSuccess = async (response: any, paymentId: string) => {
-    setIsVerifyingPayment(true); // Start loading
+    setIsVerifyingPayment(true);
     try {
       const verifyResponse = await api.post("/payments/verify", {
         payment_id: paymentId,
@@ -167,17 +157,16 @@ const OrdersPage: React.FC = () => {
         amount: pendingOrdersTotal,
       });
 
-      // Refresh orders after successful payment
       fetchOrders();
     } catch (error) {
       console.error("Error verifying payment:", error);
-      alert(
+      toast.error(
         `Error: ${
           error instanceof Error ? error.message : "Unknown error occurred"
         }`
       );
     } finally {
-      setIsVerifyingPayment(false); // End loading
+      setIsVerifyingPayment(false);
     }
   };
 
@@ -188,8 +177,8 @@ const OrdersPage: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64 text-white">
-        <Loader2 className="w-8 h-8 mr-2 animate-spin" />
+      <div className="flex items-center justify-center h-screen text-white">
+        <Loader2 className="w-10 h-10 mb-4 animate-spin text-[#FFA050]" />
         <span>Loading orders...</span>
       </div>
     );
@@ -203,73 +192,67 @@ const OrdersPage: React.FC = () => {
         strategy="lazyOnload"
       />
 
-      <div className="p-6 max-w-6xl mx-auto bg-[#212121] min-h-screen">
-        <h1 className="text-2xl font-bold text-white mb-6">Order Management</h1>
-
-        {/* Payment Success Message */}
-        {paymentSuccess && (
-          <div className="bg-green-900 text-green-400 p-6 rounded-xl shadow mb-8">
-            <h2 className="text-xl font-semibold mb-2">Payment Successful!</h2>
-            <p>Payment ID: {paymentDetails?.paymentId}</p>
-            <p>Order ID: {paymentDetails?.orderId}</p>
-            <p>Amount: ₹{(paymentDetails?.amount).toFixed(2)}</p>
-            <button
-              onClick={() => setPaymentSuccess(false)}
-              className="mt-4 px-4 py-2 bg-green-800 text-green-300 rounded-md hover:bg-green-700"
-            >
-              Dismiss
-            </button>
+      <div className="min-h-screen bg-[#212121]">
+        <header className="sticky top-0 z-10 bg-[#2D2D2D] shadow-md">
+          <div className="p-4 flex items-center gap-3">
+            <Link href="/menu" className="text-gray-300 hover:text-[#FFA050]">
+              <ArrowLeft size={24} />
+            </Link>
+            <h1 className="text-2xl font-bold text-white">Your Orders</h1>
           </div>
-        )}
+        </header>
 
-        {/* Orders Summary */}
-        <div className="grid grid-cols-3 gap-6 mb-8">
-          <div className="bg-[#2D2D2D] p-6 rounded-xl shadow">
-            <h3 className="text-white text-lg font-medium mb-2">
-              Total Orders
-            </h3>
-            <p className="text-white text-2xl font-bold">{orders.length}</p>
+        <main className="p-4 pb-24">
+          {paymentSuccess && (
+            <div className="bg-[#2D2D2D] border border-green-700 text-white p-4 rounded-xl mb-6">
+              <h2 className="text-xl font-semibold mb-2 text-green-400">
+                Payment Successful!
+              </h2>
+              <p className="text-gray-300">
+                Payment ID: {paymentDetails?.paymentId.substring(0, 12)}...
+              </p>
+              <p className="text-gray-300">
+                Order ID: {paymentDetails?.orderId.substring(0, 12)}...
+              </p>
+              <p className="text-gray-300 mb-4">
+                Amount: ₹{(paymentDetails?.amount).toFixed(2)}
+              </p>
+              <button
+                onClick={() => setPaymentSuccess(false)}
+                className="w-full py-3 bg-green-800 text-white rounded-lg hover:bg-green-700"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-3 mb-6">
+            <div className="bg-[#2D2D2D] p-4 rounded-xl shadow">
+              <h3 className="text-gray-400 text-sm mb-1">Total Orders</h3>
+              <p className="text-white text-xl font-bold">{orders.length}</p>
+            </div>
+
+            <div className="bg-[#2D2D2D] p-4 rounded-xl shadow">
+              <h3 className="text-gray-400 text-sm mb-1">Pending</h3>
+              <p className="text-[#FFA050] text-xl font-bold">
+                {orders.filter((order) => order.status === "pending").length}
+              </p>
+            </div>
           </div>
 
-          <div className="bg-[#2D2D2D] p-6 rounded-xl shadow">
-            <h3 className="text-white text-lg font-medium mb-2">
-              Pending Orders
-            </h3>
-            <p className="text-yellow-400 text-2xl font-bold">
-              {orders.filter((order) => order.status === "pending").length}
-            </p>
-          </div>
-
-          <div className="bg-[#2D2D2D] p-6 rounded-xl shadow">
-            <h3 className="text-white text-lg font-medium mb-2">
-              Completed Orders
-            </h3>
-            <p className="text-green-400 text-2xl font-bold">
-              {orders.filter((order) => order.status === "completed").length}
-            </p>
-          </div>
-        </div>
-
-        {/* Checkout Button Section */}
-        {pendingOrdersTotal > 0 && (
-          <div className="bg-[#2D2D2D] p-6 rounded-xl shadow mb-8">
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-white text-lg font-medium mb-1">
-                  Ready to Pay?
-                </h3>
-                <p className="text-gray-400">
-                  Total amount for pending orders: ₹
-                  {pendingOrdersTotal.toFixed(2)}
-                </p>
-              </div>
+          {pendingOrdersTotal > 0 && (
+            <div className="bg-[#2D2D2D] p-4 rounded-xl shadow mb-6">
+              <h3 className="text-white font-medium mb-1">Ready to Pay?</h3>
+              <p className="text-gray-400 text-sm mb-3">
+                Total amount: ₹{pendingOrdersTotal.toFixed(2)}
+              </p>
               <button
                 onClick={handleCheckout}
                 disabled={isCheckingOut || isVerifyingPayment}
-                className={`flex items-center px-6 py-3 text-white bg-blue-500 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full flex justify-center items-center py-3 text-white bg-gradient-to-r from-[#FF8030] to-[#FFA050] rounded-lg ${
                   isCheckingOut || isVerifyingPayment
-                    ? "opacity-70 cursor-not-allowed"
-                    : ""
+                    ? "opacity-70"
+                    : "hover:from-[#FF7020] hover:to-[#FF9040]"
                 }`}
               >
                 {isCheckingOut ? (
@@ -290,55 +273,46 @@ const OrdersPage: React.FC = () => {
                 )}
               </button>
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Orders List */}
-        <div>
-          <h2 className="text-xl font-semibold text-white mb-4">All Orders</h2>
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-white mb-3">
+              Your Order History
+            </h2>
 
-          <div className="bg-[#2D2D2D] rounded-xl shadow overflow-hidden">
-            {/* Table Header */}
-            <div className="grid grid-cols-5 p-4 bg-[#3D3D3D] text-white font-medium">
-              <div>Order ID</div>
-              <div>Date</div>
-              <div>Amount</div>
-              <div>Status</div>
-              <div>Actions</div>
-            </div>
-
-            {/* Orders List */}
             {orders.length > 0 ? (
-              <div className="divide-y divide-gray-700">
+              <div className="space-y-3">
                 {orders.map((order) => (
-                  <div key={order.order_id} className="text-white">
-                    {/* Order Summary Row */}
+                  <div
+                    key={order.order_id}
+                    className="bg-[#2D2D2D] rounded-xl overflow-hidden shadow"
+                  >
                     <div
-                      className="grid grid-cols-5 p-4 cursor-pointer hover:bg-[#343434]"
+                      className="p-4 flex justify-between items-center cursor-pointer"
                       onClick={() => toggleOrderExpansion(order.order_id)}
                     >
-                      <div
-                        className="font-medium truncate"
-                        title={order.order_id}
-                      >
-                        #{order.order_id.substring(0, 8)}...
-                      </div>
-                      <div>{formatDate(order.created_at)}</div>
-                      <div>₹{order.total_amount.toFixed(2)}</div>
                       <div>
-                        <span
-                          className={`px-3 py-1 rounded-full text-sm ${
-                            order.status === "completed"
-                              ? "bg-green-900 text-green-400"
-                              : order.status === "payment_initiated"
-                              ? "bg-blue-900 text-blue-400"
-                              : "bg-yellow-900 text-yellow-400"
-                          }`}
-                        >
-                          {order.status}
-                        </span>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-xs ${
+                              order.status === "completed"
+                                ? "bg-green-900/50 text-green-400"
+                                : order.status === "payment_initiated"
+                                ? "bg-blue-900/50 text-blue-400"
+                                : "bg-yellow-900/50 text-yellow-400"
+                            }`}
+                          >
+                            {order.status}
+                          </span>
+                          <span className="text-gray-400 text-xs">
+                            {formatDate(order.created_at)}
+                          </span>
+                        </div>
+                        <div className="text-white font-medium">
+                          ₹{order.total_amount.toFixed(2)}
+                        </div>
                       </div>
-                      <div className="flex items-center justify-end">
+                      <div>
                         {expandedOrderId === order.order_id ? (
                           <ChevronUp className="w-5 h-5 text-gray-400" />
                         ) : (
@@ -347,79 +321,50 @@ const OrdersPage: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Expanded Order Details */}
                     {expandedOrderId === order.order_id && (
-                      <div className="bg-[#262626] p-6">
-                        <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-lg font-medium">Order Details</h3>
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4 text-gray-400" />
-                            <span className="text-gray-400 text-sm">
-                              Last updated: {formatDate(order.updated_at)}
-                            </span>
-                          </div>
+                      <div className="bg-[#262626] p-4 border-t border-gray-700">
+                        <div className="flex items-center gap-2 mb-3 text-xs text-gray-400">
+                          <Clock size={14} />
+                          <span>
+                            Last updated: {formatDate(order.updated_at)}
+                          </span>
                         </div>
 
-                        {/* Order Details */}
-                        <div className="mb-6">
-                          <div className="bg-[#2D2D2D] rounded-lg p-4">
-                            <p className="text-white">
-                              <span className="text-gray-400">Order ID:</span>{" "}
-                              {order.order_id}
-                            </p>
-                            <p className="text-white">
-                              <span className="text-gray-400">Cart ID:</span>{" "}
-                              {order.cart_id}
-                            </p>
-                            <p className="text-white">
-                              <span className="text-gray-400">User ID:</span>{" "}
-                              {order.user_id}
-                            </p>
-                            <p className="text-white">
-                              <span className="text-gray-400">
-                                Total Amount:
-                              </span>{" "}
-                              ₹{order.total_amount.toFixed(2)}
-                            </p>
-                            <p className="text-white">
-                              <span className="text-gray-400">Created:</span>{" "}
-                              {formatDate(order.created_at)}
-                            </p>
-                          </div>
+                        <div className="space-y-1 text-sm mb-4">
+                          <p className="text-gray-300">
+                            <span className="text-gray-500">Order ID:</span> #
+                            {order.order_id.substring(0, 8)}
+                          </p>
+                          <p className="text-gray-300">
+                            <span className="text-gray-500">Cart ID:</span> #
+                            {order.cart_id.substring(0, 8)}
+                          </p>
                         </div>
 
-                        {/* Order Items - Only show if items are available */}
                         {order.items && order.items.length > 0 && (
-                          <div className="mb-6">
-                            <h4 className="text-gray-400 mb-2">
+                          <div>
+                            <h4 className="text-gray-400 text-xs mb-2">
                               Items in this order:
                             </h4>
-                            <div className="bg-[#2D2D2D] rounded-lg divide-y divide-gray-700">
+                            <div className="space-y-2">
                               {order.items.map((item, index) => (
                                 <div
                                   key={index}
-                                  className="p-4 flex justify-between"
+                                  className="bg-[#2D2D2D] p-3 rounded-lg text-sm"
                                 >
-                                  <div>
+                                  <div className="flex justify-between mb-1">
                                     <p className="text-white">
-                                      Item ID: {item.item_id.substring(0, 8)}...
+                                      Item #{item.item_id.substring(0, 6)}
                                     </p>
-                                    <p className="text-gray-400 text-sm">
-                                      Quantity: {item.quantity}
+                                    <p className="text-white font-medium">
+                                      x{item.quantity}
                                     </p>
-                                    {item.user_id && (
-                                      <p className="text-gray-400 text-sm">
-                                        User ID: {item.user_id.substring(0, 8)}
-                                        ...
-                                      </p>
-                                    )}
-                                    {item.user_ids &&
-                                      item.user_ids.length > 0 && (
-                                        <div className="text-gray-400 text-sm">
-                                          Users: {item.user_ids.length} users
-                                        </div>
-                                      )}
                                   </div>
+                                  {item.user_id && (
+                                    <p className="text-gray-400 text-xs">
+                                      Added by: {item.user_id.substring(0, 8)}
+                                    </p>
+                                  )}
                                 </div>
                               ))}
                             </div>
@@ -431,12 +376,17 @@ const OrdersPage: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="p-6 text-center text-gray-400">
-                No orders found
+              <div className="bg-[#2D2D2D] p-6 rounded-xl text-center">
+                <p className="text-gray-400">No orders found</p>
+                <Link href="/menu">
+                  <button className="mt-4 px-6 py-3 bg-gradient-to-r from-[#FF8030] to-[#FFA050] text-white font-medium rounded-lg">
+                    Browse Menu
+                  </button>
+                </Link>
               </div>
             )}
           </div>
-        </div>
+        </main>
       </div>
     </>
   );

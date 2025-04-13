@@ -4,6 +4,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Macondo_Swash_Caps } from "next/font/google";
 import "./globals.css";
 import "react-toastify/dist/ReactToastify.css";
+import Navbar from "@/components/navbar";
+import { CartProvider } from "@/context/CartContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,16 +37,19 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${macondoSwashCaps.variable} antialiased bg-black`}
       >
-        {children}
-        <ToastContainer
-          position="top-center"
-          autoClose={1500}
-          hideProgressBar={false}
-          closeOnClick
-          pauseOnHover
-          draggable
-          theme="dark"
-        />
+        <CartProvider>
+          {children}
+          <ToastContainer
+            position="top-center"
+            autoClose={1500}
+            hideProgressBar={false}
+            closeOnClick
+            pauseOnHover
+            draggable
+            theme="dark"
+          />
+          <Navbar />
+        </CartProvider>
       </body>
     </html>
   );
