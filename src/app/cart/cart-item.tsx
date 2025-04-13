@@ -68,7 +68,7 @@ const CartItemComponent: React.FC<CartItemProps> = ({
 
           {item.user_id && (
             <div className="text-gray-500 text-xs mt-1">
-              Added by: {item.user_id.substring(0, 8)}
+              Added by: {item.user.user_name}
             </div>
           )}
 

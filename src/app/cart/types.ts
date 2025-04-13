@@ -16,6 +16,7 @@ export interface CartItem {
   cart_id: string;
   item_id: string;
   user_id: string;
+  user: UserDetails;
   quantity: number;
   item_price: number;
   notes?: string;

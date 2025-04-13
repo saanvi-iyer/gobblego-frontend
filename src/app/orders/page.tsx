@@ -14,10 +14,23 @@ import { toast } from "react-toastify";
 import Link from "next/link";
 
 interface OrderItem {
+  order_item_id: string;
+  order_id: string;
+  cart_id: string;
   item_id: string;
-  user_id?: string;
-  user_ids?: string[];
   quantity: number;
+  price: number;
+  notes: string;
+  item: {
+    item_id: string;
+    item_name: string;
+    price: number;
+    is_available: boolean;
+    category: string;
+    est_prep_time: number;
+    description: string;
+    images: string;
+  };
 }
 
 interface Order {
@@ -28,7 +41,7 @@ interface Order {
   total_amount: number;
   created_at: string;
   updated_at: string;
-  items?: OrderItem[];
+  order_items?: OrderItem[];
 }
 
 interface PaymentDetails {
@@ -341,28 +354,34 @@ const OrdersPage: React.FC = () => {
                           </p>
                         </div>
 
-                        {order.items && order.items.length > 0 && (
+                        {order.order_items && order.order_items.length > 0 && (
                           <div>
                             <h4 className="text-gray-400 text-xs mb-2">
                               Items in this order:
                             </h4>
                             <div className="space-y-2">
-                              {order.items.map((item, index) => (
+                              {order.order_items.map((orderItem, index) => (
                                 <div
                                   key={index}
                                   className="bg-[#2D2D2D] p-3 rounded-lg text-sm"
                                 >
-                                  <div className="flex justify-between mb-1">
-                                    <p className="text-white">
-                                      Item #{item.item_id.substring(0, 6)}
-                                    </p>
+                                  <div className="flex justify-between items-center mb-1">
+                                    <div>
+                                      <p className="text-white font-medium">
+                                        {orderItem.item.item_name}
+                                      </p>
+                                      <p className="text-gray-400 text-xs">
+                                        #{orderItem.item_id.substring(0, 6)}
+                                      </p>
+                                    </div>
                                     <p className="text-white font-medium">
-                                      x{item.quantity}
+                                      x{orderItem.quantity}
                                     </p>
                                   </div>
-                                  {item.user_id && (
-                                    <p className="text-gray-400 text-xs">
-                                      Added by: {item.user_id.substring(0, 8)}
+
+                                  {orderItem.notes && (
+                                    <p className="text-gray-400 text-xs italic">
+                                      Notes: {orderItem.notes}
                                     </p>
                                   )}
                                 </div>
