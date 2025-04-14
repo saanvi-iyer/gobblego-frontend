@@ -29,12 +29,14 @@ export const MenuItem: React.FC<MenuItemProps> = ({
 
   const updateCart = async (newQuantity: number) => {
     try {
-      const user = JSON.parse(
-        localStorage.getItem("user") || "{}"
-      ) as UserDetails;
-      if (!user?.cart_id) {
-        toast.error("Please join a table first");
-        return;
+      if (typeof window !== "undefined") {
+        const user = JSON.parse(
+          localStorage.getItem("user") || "{}"
+        ) as UserDetails;
+        if (!user?.cart_id) {
+          toast.error("Please join a table first");
+          return;
+        }
       }
 
       const cartItem = cart?.find((ci) => ci.item_id === item.item_id);

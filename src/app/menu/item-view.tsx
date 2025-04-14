@@ -1,12 +1,12 @@
 "use client";
 
-import { MenuResponse } from "./types";
+import { MenuItem } from "../cart/types";
 
 export default function ItemModal({
   item,
   onClose,
 }: {
-  item: MenuResponse;
+  item: MenuItem;
   onClose: () => void;
 }) {
   return (

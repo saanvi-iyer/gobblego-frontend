@@ -30,12 +30,14 @@ export default function Table() {
       return;
     }
     try {
-      const response = await api.post<UserDetails>(`/users/`, {
-        cart_id: params.id,
-        user_name: userName.trim(),
-      });
-      localStorage.setItem("user", JSON.stringify(response.data));
-      router.push("/menu");
+      if (typeof window !== "undefined") {
+        const response = await api.post<UserDetails>(`/users/`, {
+          cart_id: params.id,
+          user_name: userName.trim(),
+        });
+        localStorage.setItem("user", JSON.stringify(response.data));
+        router.push("/menu");
+      }
     } catch (e) {
       toast.error("Error joining table");
       return;

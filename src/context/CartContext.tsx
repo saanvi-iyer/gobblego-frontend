@@ -27,8 +27,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (cart) {
       const itemCount = cart.reduce((total, item) => total + item.quantity, 0);
       setTotalItems(itemCount);
-
-      localStorage.setItem("cartData", JSON.stringify(cart));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cartData", JSON.stringify(cart));
+      }
     }
   }, [cart]);
 

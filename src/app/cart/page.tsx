@@ -16,8 +16,10 @@ const Cart: React.FC = () => {
   const router = useRouter();
 
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
-    setUser(storedUser);
+    if (typeof window !== "undefined") {
+      const storedUser = JSON.parse(localStorage.getItem("user") || "{}");
+      setUser(storedUser);
+    }
   }, []);
 
   useEffect(() => {
@@ -32,8 +34,9 @@ const Cart: React.FC = () => {
     try {
       const { data } = await api.get<CartItem[]>("/cart/items");
       setCartItems(data);
-
-      localStorage.setItem("cartData", JSON.stringify(data));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cartData", JSON.stringify(data));
+      }
     } catch (err) {
       console.error("Error fetching cart:", err);
       toast.error("Failed to load cart");
@@ -49,8 +52,9 @@ const Cart: React.FC = () => {
       });
 
       toast.success("Order placed successfully!");
-
-      localStorage.setItem("cartData", JSON.stringify([]));
+      if (typeof window !== "undefined") {
+        localStorage.setItem("cartData", JSON.stringify([]));
+      }
       router.push(`/orders`);
     } catch (error) {
       console.error("Error placing order:", error);

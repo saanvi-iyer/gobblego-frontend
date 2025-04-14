@@ -20,13 +20,14 @@ export default function Navbar() {
 
   const getCartItemCount = () => {
     try {
-      const cartData = localStorage.getItem("cartData");
-      if (!cartData) return 0;
+      if (typeof window !== "undefined") {
+        const cartData = localStorage.getItem("cartData");
+        if (!cartData) return 0;
+        const cart = JSON.parse(cartData);
+        if (!Array.isArray(cart)) return 0;
 
-      const cart = JSON.parse(cartData);
-      if (!Array.isArray(cart)) return 0;
-
-      return cart.reduce((total, item) => total + (item.quantity || 0), 0);
+        return cart.reduce((total, item) => total + (item.quantity || 0), 0);
+      }
     } catch (error) {
       console.error("Error getting cart count:", error);
       return 0;
