@@ -150,11 +150,11 @@ const Cart: React.FC = () => {
               <div className="p-4 space-y-3">
                 <div className="flex justify-between text-gray-300">
                   <span>Subtotal</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-white font-medium text-lg pt-2 border-t border-gray-700">
                   <span>Total</span>
-                  <span>${subtotal.toFixed(2)}</span>
+                  <span>₹{subtotal.toFixed(2)}</span>
                 </div>
               </div>
 
@@ -164,7 +164,7 @@ const Cart: React.FC = () => {
                     className="w-full py-3 bg-gradient-to-r from-[#FF8030] to-[#FFA050] hover:from-[#FF7020] hover:to-[#FF9040] text-white font-medium rounded-lg transition-all duration-200 shadow-lg"
                     onClick={handlePlaceOrder}
                   >
-                    Place Order • ${subtotal.toFixed(2)}
+                    Place Order • ₹{subtotal.toFixed(2)}
                   </button>
                 ) : (
                   <div className="w-full py-3 bg-[#3D3D3D] text-amber-400 text-center font-medium rounded-lg border border-amber-700/30 shadow-inner">

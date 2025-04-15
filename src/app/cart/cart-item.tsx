@@ -52,11 +52,11 @@ const CartItemComponent: React.FC<CartItemProps> = ({
                 {item.item.item_name}
               </h3>
               <p className="text-[#FFA050] text-sm mt-0.5">
-                ${item.item_price.toFixed(2)}
+                ₹{item.item_price.toFixed(2)}
               </p>
             </div>
             <p className="text-white font-medium text-right whitespace-nowrap">
-              ${total}
+              ₹{total}
             </p>
           </div>
 

@@ -80,7 +80,7 @@ export default function Table() {
             >
               <span>{member.user_name}</span>
               <span
-                className={`px-2 py-1 rounded-full text-xs ${
+                className={`badge px-2 py-1 rounded-full text-xs ${
                   member.is_leader
                     ? "bg-[#FFA050] text-[#212121]"
                     : "bg-[#656567]"

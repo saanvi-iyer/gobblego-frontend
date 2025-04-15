@@ -94,7 +94,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({
           <div className="flex flex-col gap-1">
             <div className="text-lg font-bold">{item.item_name}</div>
             <div className="flex gap-1 items-center text-white text-base font-semibold">
-              <span>${item.price.toFixed(2)}</span>
+              <span>₹{item.price.toFixed(2)}</span>
               <span>∙</span>
               <span>{item.est_prep_time} min</span>
             </div>

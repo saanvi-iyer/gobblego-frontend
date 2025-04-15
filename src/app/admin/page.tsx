@@ -109,7 +109,7 @@ export default function AdminOrdersPage() {
         <Card className="bg-zinc-900 border-zinc-700 text-white">
           <CardContent className="p-4">
             <p className="text-zinc-400">Total Revenue</p>
-            <p className="text-xl font-bold">${totalRevenue.toFixed(2)}</p>
+            <p className="text-xl font-bold">₹{totalRevenue.toFixed(2)}</p>
           </CardContent>
         </Card>
 
@@ -162,7 +162,7 @@ export default function AdminOrdersPage() {
                       {order.status}
                     </Badge>
                   </TableCell>
-                  <TableCell>${order.total_amount.toFixed(2)}</TableCell>
+                  <TableCell>₹{order.total_amount.toFixed(2)}</TableCell>
                   <TableCell>
                     {format(new Date(order.created_at), "PPPpp")}
                   </TableCell>
