@@ -126,9 +126,13 @@ export const MenuItem: React.FC<MenuItemProps> = ({
           )}
         </div>
       </div>
-
       {isModalOpen && (
-        <ItemModal item={item} onClose={() => setIsModalOpen(false)} />
+        <ItemModal
+          item={item}
+          cart={cart}
+          onClose={() => setIsModalOpen(false)}
+          setCart={setCart}
+        />
       )}
     </>
   );
